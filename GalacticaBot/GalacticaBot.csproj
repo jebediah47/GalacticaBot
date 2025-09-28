@@ -18,6 +18,7 @@
     <PackageReference Include="DotNetEnv" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
     <PackageReference Include="NetCord" Version="1.0.0-alpha.428" />
     <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.428" />
     <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.428" />

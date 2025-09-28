@@ -19,6 +19,7 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton(botConfig);
 builder.Services.AddSingleton<PresenceManager>();
+builder.Services.AddHttpClient();
 
 builder
     .Services.AddDiscordGateway(options =>
@@ -28,8 +29,6 @@ builder
     })
     .AddGatewayHandlers(typeof(Program).Assembly)
     .AddApplicationCommands<ApplicationCommandInteraction, ApplicationCommandContext>();
-
-builder.Services.AddSingleton<IRandomColor, RandomColor>();
 
 var host = builder.Build();
 
