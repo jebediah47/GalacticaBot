@@ -1,0 +1,7 @@
+﻿services:
+  galacticabot:
+    image: galacticabot
+    build:
+      context: .
+      dockerfile: GalacticaBot/Dockerfile
+
