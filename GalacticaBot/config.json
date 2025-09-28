@@ -1,5 +1,5 @@
 ﻿{
-  "UserStatusType": "online",
+  "BotStatus": "online",
   "BotPresence": "albania.tv",
-  "UserActivityType": 3
+  "BotActivity": 3
 }

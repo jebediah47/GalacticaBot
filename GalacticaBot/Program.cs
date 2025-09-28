@@ -15,11 +15,10 @@ Env.TraversePath().Load();
 
 var botConfig = new ConfigurationBuilder<IBotConfig>().UseJsonFile("config.json").Build();
 
-Console.WriteLine(botConfig.BotActivity);
-
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton(botConfig);
+builder.Services.AddSingleton<PresenceManager>();
 
 builder
     .Services.AddDiscordGateway(options =>
