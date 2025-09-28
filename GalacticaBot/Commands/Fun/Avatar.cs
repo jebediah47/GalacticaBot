@@ -5,8 +5,7 @@ using NetCord.Services.ApplicationCommands;
 
 namespace GalacticaBot.Commands.Fun;
 
-public sealed class Avatar(IRandomColor randomColor)
-    : ApplicationCommandModule<ApplicationCommandContext>
+public sealed class Avatar : ApplicationCommandModule<ApplicationCommandContext>
 {
     [SlashCommand("avatar", "Displays the mentioned user's avatar")]
     public Task Run(
@@ -20,7 +19,7 @@ public sealed class Avatar(IRandomColor randomColor)
         user ??= Context.User;
 
         var avatarEmbed = new EmbedProperties()
-            .WithColor(randomColor.GetRandomColor())
+            .WithColor(RandomColor.Get())
             .WithTitle($"{user.Username}'s avatar")
             .WithImage(new EmbedImageProperties(user.GetAvatarUrl(ImageFormat.Png) + "?size=4096"))
             .WithTimestamp(DateTimeOffset.UtcNow);
