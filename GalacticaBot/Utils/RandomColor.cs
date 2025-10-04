@@ -2,17 +2,12 @@
 
 namespace GalacticaBot.Utils;
 
-public interface IRandomColor
+public static class RandomColor
 {
-    Color GetRandomColor();
-}
+    private static readonly Random Rnd = new Random();
 
-public sealed class RandomColor : IRandomColor
-{
-    private readonly Random _rnd = new Random();
-
-    public Color GetRandomColor()
+    public static Color Get()
     {
-        return new Color((byte)_rnd.Next(256), (byte)_rnd.Next(256), (byte)_rnd.Next(256));
+        return new Color((byte)Rnd.Next(256), (byte)Rnd.Next(256), (byte)Rnd.Next(256));
     }
 }
