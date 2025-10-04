@@ -5,7 +5,11 @@ using NetCord.Hosting.Gateway;
 
 namespace GalacticaBot.Events.Client;
 
-public sealed class ReadyHandler(ILogger<ReadyHandler> logger, GatewayClient gatewayClient, PresenceManager presenceManager) : IReadyGatewayHandler
+public sealed class ReadyHandler(
+    ILogger<ReadyHandler> logger,
+    GatewayClient gatewayClient,
+    PresenceManager presenceManager
+) : IReadyGatewayHandler
 {
     public async ValueTask HandleAsync(ReadyEventArgs arg)
     {
