@@ -34,7 +34,7 @@ public sealed class Clear : ApplicationCommandModule<ApplicationCommandContext>
 
         var maximumMessageAge = DateTimeOffset.UtcNow - TimeSpan.FromDays(14);
 
-        var messagesQuery = await channel
+        var messagesQuery = await channel!
             .GetMessagesAsync(new PaginationProperties<ulong> { BatchSize = amount })
             .Take(amount)
             .ToListAsync();
