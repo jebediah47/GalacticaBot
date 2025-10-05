@@ -19,12 +19,13 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
-    <PackageReference Include="NetCord" Version="1.0.0-alpha.428" />
-    <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.428" />
-    <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.428" />
+    <PackageReference Include="NetCord" Version="1.0.0-alpha.430" />
+    <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.430" />
+    <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.430" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <None Update="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <PackageReference Include="System.Linq.Async" Version="6.0.3" />
   </ItemGroup>
 </Project>
