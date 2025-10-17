@@ -2,6 +2,7 @@
 using DotNetEnv;
 using GalacticaBot.Configuration;
 using GalacticaBot.Data;
+using GalacticaBot.Services;
 using GalacticaBot.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,14 +36,22 @@ if (string.IsNullOrWhiteSpace(databaseUrl))
 var normalizedConnectionString = ToKvIfUri.Convert(databaseUrl);
 
 builder.Services.AddDbContext<GalacticaDbContext>(options =>
-    options.UseNpgsql(normalizedConnectionString)
+    options.UseNpgsql(normalizedConnectionString).UseSnakeCaseNamingConvention()
 );
+
+// Add pooled factory for high-throughput, short-lived contexts used by background/services
+builder.Services.AddPooledDbContextFactory<GalacticaDbContext>(options =>
+    options.UseNpgsql(normalizedConnectionString).UseSnakeCaseNamingConvention()
+);
+
+// Services (must be after DbContextFactory registration)
+builder.Services.AddSingleton<LevelingService>();
 
 builder
     .Services.AddDiscordGateway(options =>
     {
         options.Token = Environment.GetEnvironmentVariable("GALACTICA_TOKEN");
-        options.Intents = GatewayIntents.AllNonPrivileged;
+        options.Intents = GatewayIntents.AllNonPrivileged | GatewayIntents.MessageContent;
     })
     .AddGatewayHandlers(typeof(Program).Assembly)
     .AddApplicationCommands<ApplicationCommandInteraction, ApplicationCommandContext>();
