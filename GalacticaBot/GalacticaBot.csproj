@@ -26,9 +26,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
-    <PackageReference Include="NetCord" Version="1.0.0-alpha.430" />
-    <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.430" />
-    <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.430" />
+    <PackageReference Include="NetCord" Version="1.0.0-alpha.435" />
+    <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.435" />
+    <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.435" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <None Update="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
