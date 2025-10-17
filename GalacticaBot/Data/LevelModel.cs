@@ -2,7 +2,7 @@ using System;
 
 namespace GalacticaBot.Data;
 
-public class LevelModel
+public sealed class LevelModel
 {
     public string Id { get; set; } = null!;
     public string UserID { get; set; } = null!;

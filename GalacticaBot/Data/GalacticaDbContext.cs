@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GalacticaBot.Data;
 
-public class GalacticaDbContext(DbContextOptions<GalacticaDbContext> options) : DbContext(options)
+public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> options) : DbContext(options)
 {
     public DbSet<GuildConfigs> GuildConfigs => Set<GuildConfigs>();
     public DbSet<LevelModel> LevelModels => Set<LevelModel>();

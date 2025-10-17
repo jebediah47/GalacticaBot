@@ -2,7 +2,7 @@ using System;
 
 namespace GalacticaBot.Data;
 
-public class GuildConfigs
+public sealed class GuildConfigs
 {
     public int Id { get; set; }
     public string GuildID { get; set; } = null!;
