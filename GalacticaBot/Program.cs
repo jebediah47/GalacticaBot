@@ -1,7 +1,9 @@
 ﻿using Config.Net;
 using DotNetEnv;
 using GalacticaBot.Configuration;
+using GalacticaBot.Data;
 using GalacticaBot.Utils;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using NetCord;
@@ -21,6 +23,21 @@ builder.Services.AddSingleton(botConfig);
 builder.Services.AddSingleton<PresenceManager>();
 builder.Services.AddHttpClient();
 
+// Database
+var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+if (string.IsNullOrWhiteSpace(databaseUrl))
+{
+    throw new InvalidOperationException(
+        "DATABASE_URL environment variable is not set. Configure your Postgres connection string."
+    );
+}
+
+var normalizedConnectionString = ToKvIfUri.Convert(databaseUrl);
+
+builder.Services.AddDbContext<GalacticaDbContext>(options =>
+    options.UseNpgsql(normalizedConnectionString)
+);
+
 builder
     .Services.AddDiscordGateway(options =>
     {
@@ -31,6 +48,13 @@ builder
     .AddApplicationCommands<ApplicationCommandInteraction, ApplicationCommandContext>();
 
 var host = builder.Build();
+
+// Ensure database is created (no migrations yet)
+using (var scope = host.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<GalacticaDbContext>();
+    db.Database.EnsureCreated();
+}
 
 host.AddModules(typeof(Program).Assembly);
 
