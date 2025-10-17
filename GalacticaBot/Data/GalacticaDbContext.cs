@@ -2,7 +2,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GalacticaBot.Data;
 
-public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> options) : DbContext(options)
+public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> options)
+    : DbContext(options)
 {
     public DbSet<GuildConfigs> GuildConfigs => Set<GuildConfigs>();
     public DbSet<LevelModel> LevelModels => Set<LevelModel>();
@@ -18,7 +19,10 @@ public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> opti
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
 
-            e.Property(x => x.GuildID).HasColumnName("guildID").IsRequired();
+            e.Property(x => x.GuildID)
+                .HasColumnName("guildID")
+                .HasColumnType("numeric(20,0)")
+                .IsRequired();
 
             e.HasIndex(x => x.GuildID).IsUnique();
 
@@ -51,8 +55,14 @@ public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> opti
                 .HasMaxLength(36)
                 .HasDefaultValueSql("gen_random_uuid()::text");
 
-            e.Property(x => x.UserID).HasColumnName("userID").IsRequired();
-            e.Property(x => x.GuildID).HasColumnName("guildID").IsRequired();
+            e.Property(x => x.UserID)
+                .HasColumnName("userID")
+                .HasColumnType("numeric(20,0)")
+                .IsRequired();
+            e.Property(x => x.GuildID)
+                .HasColumnName("guildID")
+                .HasColumnType("numeric(20,0)")
+                .IsRequired();
 
             e.Property(x => x.Xp).HasColumnName("xp").HasColumnType("bigint").HasDefaultValue(0L);
 

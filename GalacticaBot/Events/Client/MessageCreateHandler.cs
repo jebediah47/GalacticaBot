@@ -23,8 +23,8 @@ public sealed class MessageCreateHandler(
         if (xp <= 0)
             return;
 
-        var userId = msg.Author.Id.ToString();
-        var guildId = msg.GuildId.Value.ToString();
+        var userId = msg.Author.Id;
+        var guildId = msg.GuildId.Value;
 
         var result = await leveling.GiveXpAsync(userId, guildId, xp);
         if (result.LeveledUp)

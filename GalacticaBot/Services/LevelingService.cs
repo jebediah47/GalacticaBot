@@ -34,7 +34,7 @@ public sealed class LevelingService
     /// <summary>
     /// Awards XP for a user in a guild. Creates the record if missing. Returns whether a level-up happened.
     /// </summary>
-    public async Task<LevelUpResult> GiveXpAsync(string userId, string guildId, int xpToGive)
+    public async Task<LevelUpResult> GiveXpAsync(ulong userId, ulong guildId, int xpToGive)
     {
         if (xpToGive <= 0)
             return new LevelUpResult(false, 0);
@@ -107,7 +107,7 @@ public sealed class LevelingService
         return new LevelUpResult(leveledUp, userLvl);
     }
 
-    private async Task<LevelModel?> FindXpUserAsync(string userId, string guildId)
+    private async Task<LevelModel?> FindXpUserAsync(ulong userId, ulong guildId)
     {
         await using var db = await _dbFactory.CreateDbContextAsync();
         return await db
@@ -115,13 +115,13 @@ public sealed class LevelingService
             .FirstOrDefaultAsync(e => e.UserID == userId && e.GuildID == guildId);
     }
 
-    private async Task<int?> GetUserLevelAsync(string userId, string guildId)
+    private async Task<int?> GetUserLevelAsync(ulong userId, ulong guildId)
     {
         var entry = await FindXpUserAsync(userId, guildId);
         return entry?.Level;
     }
 
-    private async Task<int?> GetUserXpAsync(string userId, string guildId)
+    private async Task<int?> GetUserXpAsync(ulong userId, ulong guildId)
     {
         var entry = await FindXpUserAsync(userId, guildId);
         if (entry is null)
@@ -136,7 +136,7 @@ public sealed class LevelingService
     }
 
     // Accepts userId and guildId instead of an interaction, per request
-    public async Task<LevelData> GetUserStatsAsync(string userId, string guildId)
+    public async Task<LevelData> GetUserStatsAsync(ulong userId, ulong guildId)
     {
         var level = await GetUserLevelAsync(userId, guildId);
         var xp = await GetUserXpAsync(userId, guildId);
