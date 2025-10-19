@@ -1,6 +1,6 @@
 ﻿services:
   galacticabot:
-    image: ghcr.io/jebediah47/GalacticaBot:latest
+    image: ghcr.io/jebediah47/galacticabot:latest
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - GALACTICA_TOKEN=${GALACTICA_TOKEN}
