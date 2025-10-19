@@ -1,9 +1,6 @@
 ﻿services:
   galacticabot:
-    image: galacticabot
-    build:
-      context: .
-      dockerfile: GalacticaBot/Dockerfile
+    image: ghcr.io/jebediah47/GalacticaBot:latest
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - GALACTICA_TOKEN=${GALACTICA_TOKEN}
