@@ -36,7 +36,21 @@ public sealed class MessageCreateHandler(
                 guildId,
                 msg.ChannelId
             );
-            // Intentionally not replying to avoid extra calls; logging only.
+
+            // Reply immediately to the triggering message
+            try
+            {
+                await msg.ReplyAsync($"You've leveled up to level {result.NewLevel}!");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(
+                    ex,
+                    "Failed to send level-up reply for user {UserId} in guild {GuildId}",
+                    userId,
+                    guildId
+                );
+            }
         }
     }
 }
