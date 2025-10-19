@@ -4,4 +4,7 @@
     build:
       context: .
       dockerfile: GalacticaBot/Dockerfile
-
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - GALACTICA_TOKEN=${GALACTICA_TOKEN}
+    restart: unless-stopped
