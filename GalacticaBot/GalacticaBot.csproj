@@ -30,9 +30,6 @@
     <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.437" />
     <PackageReference Include="NetCord.Hosting.Services" Version="1.0.0-alpha.437" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
-    <None Update="config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <PackageReference Include="System.Linq.Async" Version="6.0.3" />
   </ItemGroup>
   <ItemGroup>

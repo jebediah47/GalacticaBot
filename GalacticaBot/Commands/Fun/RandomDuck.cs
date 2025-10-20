@@ -3,16 +3,16 @@ using GalacticaBot.Utils;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
 
-namespace GalacticaBot.Commands.Misc;
+namespace GalacticaBot.Commands.Fun;
 
-public sealed class Kanye(IHttpClientFactory httpClientFactory)
+public class RandomDuck(IHttpClientFactory httpClientFactory)
     : ApplicationCommandModule<ApplicationCommandContext>
 {
-    [SlashCommand("kanye", "Sends a random quote from Kanye West")]
+    [SlashCommand("randomduck", "Returns a image of a duck")]
     public async Task Run()
     {
         var http = httpClientFactory.CreateClient();
-        var response = await http.GetAsync("https://api.kanye.rest/");
+        var response = await http.GetAsync("https://random-d.uk/api/random");
 
         if (!response.IsSuccessStatusCode)
         {
@@ -21,7 +21,7 @@ public sealed class Kanye(IHttpClientFactory httpClientFactory)
                     new InteractionMessageProperties().WithEmbeds(
                         [
                             GlobalErrorEmbed.Get(
-                                "Failed to fetch Kanye quote. Please try again later."
+                                "Failed to get a random duck image. Please try again later."
                             ),
                         ]
                     )
@@ -31,13 +31,13 @@ public sealed class Kanye(IHttpClientFactory httpClientFactory)
             return;
         }
 
-        var resp = await response.Content.ReadFromJsonAsync<KanyeQuote>();
-        if (resp is null || string.IsNullOrWhiteSpace(resp.Quote))
+        var resp = await response.Content.ReadFromJsonAsync<RandomDuckResponse>();
+        if (resp is null || string.IsNullOrWhiteSpace(resp.Url))
         {
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get("Invalid response from Kanye quote service.")]
+                        [GlobalErrorEmbed.Get("Invalid response from random duck API service.")]
                     )
                 )
             );
@@ -45,8 +45,8 @@ public sealed class Kanye(IHttpClientFactory httpClientFactory)
             return;
         }
 
-        await RespondAsync(InteractionCallback.Message(resp.Quote));
+        await RespondAsync(InteractionCallback.Message(resp.Url));
     }
 
-    private record KanyeQuote(string Quote = "");
+    private record RandomDuckResponse(string Url, string Message);
 }
