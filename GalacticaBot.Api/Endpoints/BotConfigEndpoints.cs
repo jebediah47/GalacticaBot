@@ -37,7 +37,7 @@ public static class BotConfigEndpoints
             }
         );
 
-        api.MapPut(
+        api.MapPost(
             "/",
             async (
                 BotConfigDto request,
