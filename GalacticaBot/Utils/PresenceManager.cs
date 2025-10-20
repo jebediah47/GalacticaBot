@@ -1,15 +1,24 @@
-﻿using GalacticaBot.Configuration;
+﻿using GalacticaBot.Services;
 using NetCord.Gateway;
 
 namespace GalacticaBot.Utils;
 
-public sealed class PresenceManager(IBotConfig botConfig)
+public sealed class PresenceManager
 {
+    private readonly BotConfigService _configService;
+
+    public PresenceManager(BotConfigService configService)
+    {
+        _configService = configService;
+    }
+
     public async ValueTask SetPresence(GatewayClient gatewayClient)
     {
-        var presence = new PresenceProperties(botConfig.BotStatus)
+        var config = await _configService.GetCurrentConfigAsync();
+
+        var presence = new PresenceProperties(config.BotStatus)
         {
-            Activities = [new UserActivityProperties(botConfig.BotPresence, botConfig.BotActivity)],
+            Activities = [new UserActivityProperties(config.BotPresence, config.BotActivity)],
         };
 
         await gatewayClient.UpdatePresenceAsync(presence);

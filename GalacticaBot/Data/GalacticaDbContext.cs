@@ -7,6 +7,7 @@ public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> opti
 {
     public DbSet<GuildConfigs> GuildConfigs => Set<GuildConfigs>();
     public DbSet<LevelModel> LevelModels => Set<LevelModel>();
+    public DbSet<BotConfig> BotConfigs => Set<BotConfig>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +78,41 @@ public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> opti
             e.HasIndex(x => new { x.UserID, x.GuildID }).IsUnique();
 
             // Additional non-unique index is redundant when unique exists in PostgreSQL, so we omit it.
+        });
+
+        // BotConfig mapping
+        modelBuilder.Entity<BotConfig>(e =>
+        {
+            e.ToTable("BotConfig");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Id).HasColumnName("id").UseIdentityByDefaultColumn();
+
+            // Store enums as ints
+            e.Property(x => x.BotStatus)
+                .HasColumnName("botStatus")
+                .HasConversion<int>()
+                .IsRequired();
+            e.Property(x => x.BotActivity)
+                .HasColumnName("botActivity")
+                .HasConversion<int>()
+                .IsRequired();
+
+            e.Property(x => x.BotPresence)
+                .HasColumnName("botPresence")
+                .HasMaxLength(256)
+                .HasDefaultValue("")
+                .IsRequired();
+
+            e.Property(x => x.LastUpdated)
+                .HasColumnName("lastUpdated")
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp with time zone");
+
+            // Ensure single-row table by constraining id to 1 (soft enforcement)
+            e.ToTable("BotConfig", t => 
+            {
+                t.HasCheckConstraint("ck_botconfig_single", "id = 1");
+            });
         });
     }
 }

@@ -8,3 +8,9 @@
       - DATABASE_URL=${DATABASE_URL}
       - GALACTICA_TOKEN=${GALACTICA_TOKEN}
     restart: unless-stopped
+  galacticabot.api:
+    image: galacticabot.api
+    build:
+      context: .
+      dockerfile: GalacticaBot.Api/Dockerfile
+

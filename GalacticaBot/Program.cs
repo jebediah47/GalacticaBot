@@ -1,7 +1,5 @@
-﻿using Config.Net;
-using DotNetEnv;
-using GalacticaBot.Configuration;
-using GalacticaBot.Data;
+﻿using GalacticaBot.Data;
+using GalacticaBot.EnvManager;
 using GalacticaBot.Services;
 using GalacticaBot.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -14,13 +12,10 @@ using NetCord.Hosting.Services;
 using NetCord.Hosting.Services.ApplicationCommands;
 using NetCord.Services.ApplicationCommands;
 
-Env.TraversePath().Load();
-
-var botConfig = new ConfigurationBuilder<IBotConfig>().UseJsonFile("config.json").Build();
-
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddSingleton(botConfig);
+EnvManager.EnsureEnvironment(builder.Environment);
+
 builder.Services.AddSingleton<PresenceManager>();
 builder.Services.AddHttpClient();
 
@@ -35,17 +30,15 @@ if (string.IsNullOrWhiteSpace(databaseUrl))
 
 var normalizedConnectionString = ToKvIfUri.Convert(databaseUrl);
 
-builder.Services.AddDbContext<GalacticaDbContext>(options =>
-    options.UseNpgsql(normalizedConnectionString).UseSnakeCaseNamingConvention()
-);
-
 // Add pooled factory for high-throughput, short-lived contexts used by background/services
 builder.Services.AddPooledDbContextFactory<GalacticaDbContext>(options =>
     options.UseNpgsql(normalizedConnectionString).UseSnakeCaseNamingConvention()
 );
 
 // Services (must be after DbContextFactory registration)
+builder.Services.AddSingleton<BotConfigService>();
 builder.Services.AddSingleton<LevelingService>();
+builder.Services.AddHostedService<BotConfigSyncService>();
 
 builder
     .Services.AddDiscordGateway(options =>
@@ -59,10 +52,10 @@ builder
 var host = builder.Build();
 
 // Ensure database is created (no migrations yet)
-using (var scope = host.Services.CreateScope())
+var dbFactory = host.Services.GetRequiredService<IDbContextFactory<GalacticaDbContext>>();
+await using (var db = await dbFactory.CreateDbContextAsync())
 {
-    var db = scope.ServiceProvider.GetRequiredService<GalacticaDbContext>();
-    db.Database.EnsureCreated();
+    await db.Database.EnsureCreatedAsync();
 }
 
 host.AddModules(typeof(Program).Assembly);
