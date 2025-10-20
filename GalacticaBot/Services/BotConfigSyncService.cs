@@ -1,8 +1,8 @@
+using GalacticaBot.Utils;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetCord.Gateway;
-using GalacticaBot.Utils;
 
 namespace GalacticaBot.Services;
 
@@ -18,7 +18,8 @@ public sealed class BotConfigSyncService : BackgroundService
         ILogger<BotConfigSyncService> logger,
         BotConfigService configService,
         PresenceManager presenceManager,
-        GatewayClient gatewayClient)
+        GatewayClient gatewayClient
+    )
     {
         _logger = logger;
         _configService = configService;
@@ -37,25 +38,25 @@ public sealed class BotConfigSyncService : BackgroundService
 
         var hubUrl = CombineUrl(baseUrl, "/hubs/botconfig");
 
-        _connection = new HubConnectionBuilder()
-            .WithUrl(hubUrl)
-            .WithAutomaticReconnect()
-            .Build();
+        _connection = new HubConnectionBuilder().WithUrl(hubUrl).WithAutomaticReconnect().Build();
 
-        _connection.On("OnConfigurationUpdated", async () =>
-        {
-            _logger.LogInformation("Received configuration update via SignalR.");
-            try
+        _connection.On(
+            "OnConfigurationUpdated",
+            async () =>
             {
-                _configService.InvalidateCache();
-                await _configService.GetCurrentConfigAsync(stoppingToken);
-                await _presenceManager.SetPresence(_gatewayClient);
+                _logger.LogInformation("Received configuration update via SignalR.");
+                try
+                {
+                    _configService.InvalidateCache();
+                    await _configService.GetCurrentConfigAsync(stoppingToken);
+                    await _presenceManager.SetPresence(_gatewayClient);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error handling configuration update notification.");
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error handling configuration update notification.");
-            }
-        });
+        );
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -98,8 +99,10 @@ public sealed class BotConfigSyncService : BackgroundService
 
     private static string CombineUrl(string baseUrl, string path)
     {
-        if (baseUrl.EndsWith('/')) baseUrl = baseUrl.TrimEnd('/');
-        if (!path.StartsWith('/')) path = "/" + path;
+        if (baseUrl.EndsWith('/'))
+            baseUrl = baseUrl.TrimEnd('/');
+        if (!path.StartsWith('/'))
+            path = "/" + path;
         return baseUrl + path;
     }
 }

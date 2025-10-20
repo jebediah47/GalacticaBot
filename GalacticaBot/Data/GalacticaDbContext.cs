@@ -109,10 +109,13 @@ public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> opti
                 .HasColumnType("timestamp with time zone");
 
             // Ensure single-row table by constraining id to 1 (soft enforcement)
-            e.ToTable("BotConfig", t => 
-            {
-                t.HasCheckConstraint("ck_botconfig_single", "id = 1");
-            });
+            e.ToTable(
+                "BotConfig",
+                t =>
+                {
+                    t.HasCheckConstraint("ck_botconfig_single", "id = 1");
+                }
+            );
         });
     }
 }

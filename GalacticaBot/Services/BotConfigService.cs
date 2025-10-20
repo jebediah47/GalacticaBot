@@ -38,7 +38,7 @@ public sealed class BotConfigService
                     BotStatus = UserStatusType.Online,
                     BotPresence = "Ready",
                     BotActivity = UserActivityType.Playing,
-                    LastUpdated = DateTime.UtcNow
+                    LastUpdated = DateTime.UtcNow,
                 };
                 db.BotConfigs.Add(config);
                 await db.SaveChangesAsync(ct);
@@ -53,7 +53,10 @@ public sealed class BotConfigService
         }
     }
 
-    public async Task<BotConfig> UpdateConfigAsync(BotConfig newConfig, CancellationToken ct = default)
+    public async Task<BotConfig> UpdateConfigAsync(
+        BotConfig newConfig,
+        CancellationToken ct = default
+    )
     {
         await _sync.WaitAsync(ct);
         try

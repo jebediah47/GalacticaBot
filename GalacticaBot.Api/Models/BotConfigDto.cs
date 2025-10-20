@@ -21,12 +21,13 @@ public sealed class BotConfigDto
 
     public DateTime? LastUpdated { get; init; }
 
-    public static BotConfigDto FromEntity(BotConfig e) => new()
-    {
-        Id = e.Id,
-        BotStatus = e.BotStatus,
-        BotPresence = e.BotPresence,
-        BotActivity = e.BotActivity,
-        LastUpdated = e.LastUpdated,
-    };
+    public static BotConfigDto FromEntity(BotConfig e) =>
+        new()
+        {
+            Id = e.Id,
+            BotStatus = e.BotStatus,
+            BotPresence = e.BotPresence,
+            BotActivity = e.BotActivity,
+            LastUpdated = e.LastUpdated,
+        };
 }
