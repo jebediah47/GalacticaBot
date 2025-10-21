@@ -8,6 +8,8 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.AddConsole();
+
 EnvManager.EnsureEnvironment(builder.Environment);
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

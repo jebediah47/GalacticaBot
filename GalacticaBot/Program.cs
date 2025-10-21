@@ -5,6 +5,7 @@ using GalacticaBot.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NetCord;
 using NetCord.Gateway;
 using NetCord.Hosting.Gateway;
@@ -13,6 +14,8 @@ using NetCord.Hosting.Services.ApplicationCommands;
 using NetCord.Services.ApplicationCommands;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+builder.Logging.AddConsole();
 
 EnvManager.EnsureEnvironment(builder.Environment);
 
