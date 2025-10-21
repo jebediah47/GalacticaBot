@@ -1,4 +1,3 @@
-using System;
 using NetCord;
 using NetCord.Gateway;
 

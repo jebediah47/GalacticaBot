@@ -4,7 +4,7 @@ namespace GalacticaBot.Utils;
 
 public static class GlobalErrorEmbed
 {
-    public static EmbedProperties Get(string? msg = null)
+    public static EmbedProperties Generate(string? msg = null)
     {
         msg ??=
             "An unexpected error has occured and we're working hard to fix it, sorry for the inconvenience.";

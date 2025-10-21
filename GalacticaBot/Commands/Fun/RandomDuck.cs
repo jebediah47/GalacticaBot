@@ -5,10 +5,10 @@ using NetCord.Services.ApplicationCommands;
 
 namespace GalacticaBot.Commands.Fun;
 
-public class RandomDuck(IHttpClientFactory httpClientFactory)
+public sealed class RandomDuck(IHttpClientFactory httpClientFactory)
     : ApplicationCommandModule<ApplicationCommandContext>
 {
-    [SlashCommand("randomduck", "Returns a image of a duck")]
+    [SlashCommand("randomduck", "Returns a random image of a duck")]
     public async Task Run()
     {
         var http = httpClientFactory.CreateClient();
@@ -20,7 +20,7 @@ public class RandomDuck(IHttpClientFactory httpClientFactory)
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
                         [
-                            GlobalErrorEmbed.Get(
+                            GlobalErrorEmbed.Generate(
                                 "Failed to get a random duck image. Please try again later."
                             ),
                         ]
@@ -37,7 +37,11 @@ public class RandomDuck(IHttpClientFactory httpClientFactory)
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get("Invalid response from random duck API service.")]
+                        [
+                            GlobalErrorEmbed.Generate(
+                                "Invalid response from random duck API service."
+                            ),
+                        ]
                     )
                 )
             );
@@ -48,5 +52,5 @@ public class RandomDuck(IHttpClientFactory httpClientFactory)
         await RespondAsync(InteractionCallback.Message(resp.Url));
     }
 
-    private record RandomDuckResponse(string Url, string Message);
+    private sealed record RandomDuckResponse(string Url, string Message);
 }

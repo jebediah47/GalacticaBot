@@ -28,7 +28,7 @@ public sealed class Clear : ApplicationCommandModule<ApplicationCommandContext>
         if (channel is null)
             InteractionCallback.Message(
                 new InteractionMessageProperties().WithEmbeds(
-                    [GlobalErrorEmbed.Get("Invalid channel")]
+                    [GlobalErrorEmbed.Generate("Invalid channel")]
                 )
             );
 

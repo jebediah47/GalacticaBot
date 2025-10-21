@@ -21,7 +21,11 @@ public sealed class Bored(IHttpClientFactory httpClientFactory)
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get("Failed to fetch activity. Please try again later.")]
+                        [
+                            GlobalErrorEmbed.Generate(
+                                "Failed to fetch activity. Please try again later."
+                            ),
+                        ]
                     )
                 )
             );
@@ -35,7 +39,7 @@ public sealed class Bored(IHttpClientFactory httpClientFactory)
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get("No activity found. Please try again.")]
+                        [GlobalErrorEmbed.Generate("No activity found. Please try again.")]
                     )
                 )
             );

@@ -26,7 +26,7 @@ public sealed class UnlockChannel : ApplicationCommandModule<ApplicationCommandC
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
                         [
-                            GlobalErrorEmbed.Get(
+                            GlobalErrorEmbed.Generate(
                                 "Could not find `@everyone` role (guild might be partial)"
                             ),
                         ]
@@ -43,7 +43,7 @@ public sealed class UnlockChannel : ApplicationCommandModule<ApplicationCommandC
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get("Invalid channel")]
+                        [GlobalErrorEmbed.Generate("Invalid channel")]
                     )
                 )
             );
@@ -55,7 +55,7 @@ public sealed class UnlockChannel : ApplicationCommandModule<ApplicationCommandC
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get($"Channel `{channel.Name}` is already unlocked")]
+                        [GlobalErrorEmbed.Generate($"Channel `{channel.Name}` is already unlocked")]
                     )
                 )
             );

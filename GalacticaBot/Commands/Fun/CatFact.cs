@@ -20,7 +20,11 @@ public sealed class CatFact(IHttpClientFactory httpClientFactory)
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get("Failed to fetch cat fact. Please try again later.")]
+                        [
+                            GlobalErrorEmbed.Generate(
+                                "Failed to fetch cat fact. Please try again later."
+                            ),
+                        ]
                     )
                 )
             );
@@ -34,7 +38,7 @@ public sealed class CatFact(IHttpClientFactory httpClientFactory)
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get("Invalid response from cat fact service.")]
+                        [GlobalErrorEmbed.Generate("Invalid response from cat fact service.")]
                     )
                 )
             );

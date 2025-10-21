@@ -1,5 +1,3 @@
-using System;
-
 namespace GalacticaBot.Data;
 
 public sealed class GuildConfigs

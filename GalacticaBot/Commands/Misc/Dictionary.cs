@@ -26,7 +26,7 @@ public sealed class Dictionary(IHttpClientFactory httpClientFactory)
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
                         [
-                            GlobalErrorEmbed.Get(
+                            GlobalErrorEmbed.Generate(
                                 "Failed to fetch definition. Please try again later."
                             ),
                         ]
@@ -43,7 +43,7 @@ public sealed class Dictionary(IHttpClientFactory httpClientFactory)
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get($"No definitions found for **{term}**.")]
+                        [GlobalErrorEmbed.Generate($"No definitions found for **{term}**.")]
                     )
                 )
             );

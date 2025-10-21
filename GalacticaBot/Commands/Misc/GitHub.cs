@@ -24,7 +24,7 @@ public sealed class GitHub(IHttpClientFactory httpClientFactory)
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
                         [
-                            GlobalErrorEmbed.Get(
+                            GlobalErrorEmbed.Generate(
                                 "Failed to fetch user profile. Please try again later."
                             ),
                         ]

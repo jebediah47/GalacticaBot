@@ -35,7 +35,7 @@ public sealed class Meme(IHttpClientFactory httpClientFactory)
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get("Failed to fetch meme. Please try again later.")]
+                        [GlobalErrorEmbed.Generate("Failed to fetch meme. Please try again later.")]
                     )
                 )
             );
@@ -49,7 +49,7 @@ public sealed class Meme(IHttpClientFactory httpClientFactory)
             await RespondAsync(
                 InteractionCallback.Message(
                     new InteractionMessageProperties().WithEmbeds(
-                        [GlobalErrorEmbed.Get("No memes found. Please try again.")]
+                        [GlobalErrorEmbed.Generate("No memes found. Please try again.")]
                     )
                 )
             );
