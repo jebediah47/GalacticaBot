@@ -1,16 +1,34 @@
 ﻿services:
-  galacticabot:
-    image: galacticabot
+  galactica-bot:
+    image: galactica-bot
     build:
       context: .
       dockerfile: GalacticaBot/Dockerfile
     environment:
+      - DOTNET_ENVIRONMENT=Production
       - DATABASE_URL=${DATABASE_URL}
       - GALACTICA_TOKEN=${GALACTICA_TOKEN}
+      - BOT_API_URL=http://galactica-bot.api:8080
     restart: unless-stopped
-  galacticabot.api:
-    image: galacticabot.api
+    networks:
+      - galactica-bot-network
+    depends_on:
+      - galactica-bot.api
+
+  galactica-bot.api:
+    image: galactica-bot.api
     build:
       context: .
       dockerfile: GalacticaBot.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - DATABASE_URL=${DATABASE_URL}
+      - ASPNETCORE_URLS=http://+:8080
+    ports:
+      - "8080:8080"
+    networks:
+      - galactica-bot-network
 
+networks:
+  galactica-bot-network:
+    driver: bridge

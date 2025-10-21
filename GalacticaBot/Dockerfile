@@ -18,4 +18,5 @@ RUN dotnet publish "./GalacticaBot.csproj" -c $BUILD_CONFIGURATION -o /app/publi
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV DOTNET_ENVIRONMENT=Production
 ENTRYPOINT ["dotnet", "GalacticaBot.dll"]
