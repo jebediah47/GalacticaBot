@@ -32,9 +32,3 @@
 networks:
   galactica-bot-network:
     driver: bridge
-  galacticabot.dashboard.api:
-    image: galacticabot.dashboard.api
-    build:
-      context: .
-      dockerfile: GalacticaBot.Dashboard.Api/Dockerfile
-
