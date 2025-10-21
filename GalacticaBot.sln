@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalacticaBot.Api", "Galacti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalacticaBot.EnvManager", "GalacticaBot.EnvManager\GalacticaBot.EnvManager.csproj", "{3508CBC8-1DCB-4894-B40E-0A76E37328DD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalacticaBot.Dashboard.Api", "GalacticaBot.Dashboard.Api\GalacticaBot.Dashboard.Api.csproj", "{70FAFF39-1F31-446D-B456-3157A435C4D5}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,9 +29,5 @@ Global
 		{3508CBC8-1DCB-4894-B40E-0A76E37328DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3508CBC8-1DCB-4894-B40E-0A76E37328DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3508CBC8-1DCB-4894-B40E-0A76E37328DD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{70FAFF39-1F31-446D-B456-3157A435C4D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{70FAFF39-1F31-446D-B456-3157A435C4D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{70FAFF39-1F31-446D-B456-3157A435C4D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{70FAFF39-1F31-446D-B456-3157A435C4D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
