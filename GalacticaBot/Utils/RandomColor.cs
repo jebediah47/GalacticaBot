@@ -4,7 +4,7 @@ namespace GalacticaBot.Utils;
 
 public static class RandomColor
 {
-    private static readonly Random Rnd = new Random();
+    private static readonly Random Rnd = new();
 
     public static Color Generate()
     {

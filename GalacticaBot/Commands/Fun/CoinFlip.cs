@@ -1,8 +1,8 @@
-namespace GalacticaBot.Commands.Fun;
-
 using GalacticaBot.Utils;
 using NetCord.Rest;
 using NetCord.Services.ApplicationCommands;
+
+namespace GalacticaBot.Commands.Fun;
 
 public sealed class CoinFlip : ApplicationCommandModule<ApplicationCommandContext>
 {

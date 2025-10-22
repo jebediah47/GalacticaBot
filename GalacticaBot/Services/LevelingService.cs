@@ -18,10 +18,6 @@ public sealed class LevelingService
         _logger = logger;
     }
 
-    public readonly record struct LevelData(int Level, int Xp);
-
-    public readonly record struct LevelUpResult(bool LeveledUp, int NewLevel);
-
     public int GetRandomXp(string messageContent)
     {
         if (string.IsNullOrEmpty(messageContent))
@@ -32,7 +28,7 @@ public sealed class LevelingService
     }
 
     /// <summary>
-    /// Awards XP for a user in a guild. Creates the record if missing. Returns whether a level-up happened.
+    ///     Awards XP for a user in a guild. Creates the record if missing. Returns whether a level-up happened.
     /// </summary>
     public async Task<LevelUpResult> GiveXpAsync(ulong userId, ulong guildId, int xpToGive)
     {
@@ -76,10 +72,8 @@ public sealed class LevelingService
                     e.UserID == userId && e.GuildID == guildId
                 );
                 if (entry is null)
-                {
                     // Give up silently if still not found
                     return new LevelUpResult(false, 0);
-                }
             }
         }
 
@@ -144,4 +138,8 @@ public sealed class LevelingService
         // Mirror JS behavior where Number(null) -> 0
         return new LevelData(level ?? 0, xp ?? 0);
     }
+
+    public readonly record struct LevelData(int Level, int Xp);
+
+    public readonly record struct LevelUpResult(bool LeveledUp, int NewLevel);
 }
