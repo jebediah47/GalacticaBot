@@ -54,7 +54,7 @@ public sealed class Dictionary(IHttpClientFactory httpClientFactory)
         var answer = resp.List[0];
 
         var embed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTitle(answer.Word)
             .WithUrl(answer.Permalink)
             .WithFields(

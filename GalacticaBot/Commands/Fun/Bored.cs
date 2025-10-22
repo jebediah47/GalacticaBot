@@ -48,7 +48,7 @@ public sealed class Bored(IHttpClientFactory httpClientFactory)
         }
 
         var embed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTitle("Here's something for you to do!")
             .WithDescription(resp.Activity)
             .WithFields(

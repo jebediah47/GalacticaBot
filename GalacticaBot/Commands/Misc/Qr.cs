@@ -20,7 +20,7 @@ public sealed class Qr : ApplicationCommandModule<ApplicationCommandContext>
         var encodedText = Uri.EscapeDataString(text);
 
         var embed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithImage(
                 $"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodedText}"
             )

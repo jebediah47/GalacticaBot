@@ -22,7 +22,7 @@ public sealed class NickName : ApplicationCommandModule<ApplicationCommandContex
         await user.ModifyAsync(x => x.Nickname = nickname);
 
         var embed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTitle("✅ Nickname changed!")
             .WithDescription($"**{user.Username}**'s nickname has been changed to **{nickname}**")
             .WithTimestamp(DateTimeOffset.UtcNow);

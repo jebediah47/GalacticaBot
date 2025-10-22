@@ -21,7 +21,7 @@ public sealed class ResetNickName : ApplicationCommandModule<ApplicationCommandC
         await user.ModifyAsync(x => x.Nickname = user.Username);
 
         var embed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTitle("✅ Nickname changed!")
             .WithDescription($"**{user.Username}**'s nickname has been reset")
             .WithTimestamp(DateTimeOffset.UtcNow);

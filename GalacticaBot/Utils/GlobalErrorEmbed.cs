@@ -10,7 +10,7 @@ public static class GlobalErrorEmbed
             "An unexpected error has occured and we're working hard to fix it, sorry for the inconvenience.";
 
         return new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTitle("❌ An unexpected error occured!")
             .WithDescription(msg)
             .WithTimestamp(DateTimeOffset.UtcNow);

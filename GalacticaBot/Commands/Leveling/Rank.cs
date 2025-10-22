@@ -28,7 +28,7 @@ public sealed class Rank(LevelingService levelingService)
         }
 
         var embed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithAuthor(
                 new EmbedAuthorProperties
                 {

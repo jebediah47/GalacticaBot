@@ -60,7 +60,7 @@ public sealed class Meme(IHttpClientFactory httpClientFactory)
         var randomPost = resp.Data.Children[Rnd.Next(resp.Data.Children.Count)].Data;
 
         var embed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTitle(randomPost.Title)
             .WithUrl($"https://reddit.com{randomPost.Permalink}")
             .WithImage(new EmbedImageProperties(randomPost.Url))

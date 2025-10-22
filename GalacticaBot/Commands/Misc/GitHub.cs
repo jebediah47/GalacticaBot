@@ -38,7 +38,7 @@ public sealed class GitHub(IHttpClientFactory httpClientFactory)
         var resp = await response.Content.ReadFromJsonAsync<GitHubUserModel>();
 
         var embed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTitle($"{resp!.Login}")
             .WithDescription(resp.Bio ?? "No bio")
             .WithFields(

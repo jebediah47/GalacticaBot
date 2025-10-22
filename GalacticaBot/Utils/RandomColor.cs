@@ -6,7 +6,7 @@ public static class RandomColor
 {
     private static readonly Random Rnd = new Random();
 
-    public static Color Get()
+    public static Color Generate()
     {
         return new Color((byte)Rnd.Next(256), (byte)Rnd.Next(256), (byte)Rnd.Next(256));
     }

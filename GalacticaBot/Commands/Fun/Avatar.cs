@@ -19,7 +19,7 @@ public sealed class Avatar : ApplicationCommandModule<ApplicationCommandContext>
         user ??= Context.User;
 
         var avatarEmbed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTitle($"{user.Username}'s avatar")
             .WithImage(new EmbedImageProperties(user.GetAvatarUrl(ImageFormat.Png) + "?size=4096"))
             .WithTimestamp(DateTimeOffset.UtcNow);

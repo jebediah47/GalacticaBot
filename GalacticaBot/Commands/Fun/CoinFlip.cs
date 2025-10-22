@@ -24,7 +24,7 @@ public sealed class CoinFlip : ApplicationCommandModule<ApplicationCommandContex
         var embed = new EmbedProperties()
             .WithTitle($"You got {CoinNames[idx]}!")
             .WithImage(new EmbedImageProperties(CoinImages[idx]))
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTimestamp(DateTimeOffset.UtcNow);
 
         await RespondAsync(

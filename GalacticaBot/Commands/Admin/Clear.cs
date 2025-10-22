@@ -58,7 +58,7 @@ public sealed class Clear : ApplicationCommandModule<ApplicationCommandContext>
                 : $"`{messages.Count}` messages were successfully deleted.";
 
         var embed = new EmbedProperties()
-            .WithColor(RandomColor.Get())
+            .WithColor(RandomColor.Generate())
             .WithTitle("🧹 Messages cleared!")
             .WithDescription(description)
             .WithTimestamp(DateTimeOffset.UtcNow);
