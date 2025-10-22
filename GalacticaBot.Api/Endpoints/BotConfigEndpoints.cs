@@ -62,7 +62,7 @@ public static class BotConfigEndpoints
                 await db.SaveChangesAsync(ct);
 
                 // Notify all clients
-                await hub.Clients.All.SendAsync("OnConfigurationUpdated", cancellationToken: ct);
+                await hub.Clients.All.SendAsync("OnConfigurationUpdated", ct);
 
                 return Results.Ok(BotConfigDto.FromEntity(entity));
             }
