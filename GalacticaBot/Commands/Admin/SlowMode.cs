@@ -42,7 +42,11 @@ public sealed class SlowMode : ApplicationCommandModule<ApplicationCommandContex
         await channel.ModifyAsync(options => options.Slowmode = time);
 
         await RespondAsync(
-            InteractionCallback.Message($"⏱️ Set slowmode to {time} seconds in `{channel.Name}`")
+            InteractionCallback.Message(
+                time == 0
+                    ? $"Disabled slowmode in `{channel.Name}`"
+                    : $"⏱️ Set slowmode to {time} seconds in `{channel.Name}`"
+            )
         );
     }
 }
