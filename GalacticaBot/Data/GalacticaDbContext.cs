@@ -20,12 +20,12 @@ public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> opti
             e.HasKey(x => x.Id);
             e.Property(x => x.Id).HasColumnName("id").UseIdentityAlwaysColumn();
 
-            e.Property(x => x.GuildID)
+            e.Property(x => x.GuildId)
                 .HasColumnName("guildID")
                 .HasColumnType("numeric(20,0)")
                 .IsRequired();
 
-            e.HasIndex(x => x.GuildID).IsUnique();
+            e.HasIndex(x => x.GuildId).IsUnique();
 
             e.Property(x => x.GuildName).HasColumnName("guildName").IsRequired();
 
@@ -38,9 +38,20 @@ public sealed class GalacticaDbContext(DbContextOptions<GalacticaDbContext> opti
                 .HasColumnName("modLogsIsEnabled")
                 .HasDefaultValue(false);
 
-            e.Property(x => x.ModLogsChannelID).HasColumnName("modLogsChannelID");
+            e.Property(x => x.ModLogsChannelId)
+                .HasColumnName("modLogsChannelID")
+                .HasColumnType("numeric(20,0)");
 
-            e.HasIndex(x => x.ModLogsChannelID).IsUnique();
+            // Keep unique index (allows a single NULL in PostgreSQL); if you prefer to
+            // exclude NULLs add a filtered index in a migration.
+            e.HasIndex(x => x.ModLogsChannelId).IsUnique();
+
+            e.Property(x => x.LastUpdated)
+                .HasColumnName("lastUpdated")
+                .HasDefaultValueSql("now()")
+                .HasColumnType("timestamp with time zone");
+
+            e.Property(x => x.RowVersion).HasColumnName("xmin").IsRowVersion();
         });
 
         // LevelModel mapping (from Prisma LevelModel)

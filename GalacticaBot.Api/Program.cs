@@ -1,5 +1,6 @@
 using GalacticaBot.Api.Endpoints;
 using GalacticaBot.Api.Hubs;
+using GalacticaBot.Api.Services;
 using GalacticaBot.Data;
 using GalacticaBot.EnvManager;
 using GalacticaBot.Utils;
@@ -32,6 +33,9 @@ builder.Services.AddPooledDbContextFactory<GalacticaDbContext>(options =>
 // SignalR
 builder.Services.AddSignalR();
 
+// Add services
+builder.Services.AddScoped<GuildConfigService>();
+
 var app = builder.Build();
 
 // Configure pipeline
@@ -45,9 +49,11 @@ app.UseHttpsRedirection();
 
 // Map SignalR hub
 app.MapHub<BotConfigHub>("/hubs/botconfig");
+app.MapHub<GuildConfigHub>("/hubs/guildconfig");
 
 // Map API endpoints
 app.MapBotConfigEndpoints();
+app.MapGuildConfigsEndpoints();
 
 // Ensure database exists
 var dbFactory = app.Services.GetRequiredService<IDbContextFactory<GalacticaDbContext>>();
