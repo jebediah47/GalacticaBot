@@ -8,10 +8,10 @@ namespace GalacticaBot.Services;
 
 public sealed class BotConfigSyncService : BackgroundService
 {
-    private readonly ILogger<BotConfigSyncService> _logger;
     private readonly BotConfigService _configService;
-    private readonly PresenceManager _presenceManager;
     private readonly GatewayClient _gatewayClient;
+    private readonly ILogger<BotConfigSyncService> _logger;
+    private readonly PresenceManager _presenceManager;
     private HubConnection? _connection;
 
     public BotConfigSyncService(
@@ -59,7 +59,6 @@ public sealed class BotConfigSyncService : BackgroundService
         );
 
         while (!stoppingToken.IsCancellationRequested)
-        {
             try
             {
                 await _connection.StartAsync(stoppingToken);
@@ -77,13 +76,11 @@ public sealed class BotConfigSyncService : BackgroundService
                 _logger.LogError(ex, "SignalR connection failed. Retrying in 5 seconds...");
                 await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
             }
-        }
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         if (_connection is not null)
-        {
             try
             {
                 await _connection.StopAsync(cancellationToken);
@@ -93,7 +90,7 @@ public sealed class BotConfigSyncService : BackgroundService
             {
                 // ignore
             }
-        }
+
         await base.StopAsync(cancellationToken);
     }
 
