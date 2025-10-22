@@ -8,8 +8,8 @@ namespace GalacticaBot.Services;
 public sealed class BotConfigService
 {
     private readonly IDbContextFactory<GalacticaDbContext> _dbFactory;
-    private BotConfig? _cache;
     private readonly SemaphoreSlim _sync = new(1, 1);
+    private BotConfig? _cache;
 
     public BotConfigService(IDbContextFactory<GalacticaDbContext> dbFactory)
     {
