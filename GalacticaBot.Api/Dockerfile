@@ -2,8 +2,10 @@
 
 # Install step CLI for certificate management
 USER root
-RUN apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
-    bash jq curl ca-certificates step-cli
+# Enable community repository and install packages
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/main" > /etc/apk/repositories && \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v3.22/community" >> /etc/apk/repositories && \
+    apk add --no-cache bash jq curl ca-certificates step-cli
 
 USER $APP_UID
 WORKDIR /app
