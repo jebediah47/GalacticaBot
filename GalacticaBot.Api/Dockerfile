@@ -1,8 +1,19 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+
+# Install step CLI for certificate management
+USER root
+RUN apt-get update && \
+    apt-get install -y wget ca-certificates jq && \
+    wget -O step.tar.gz https://dl.smallstep.com/gh-release/cli/gh-release-header/v0.27.2/step_linux_0.27.2_amd64.tar.gz && \
+    tar -xzf step.tar.gz && \
+    mv step_0.27.2/bin/step /usr/local/bin/ && \
+    rm -rf step.tar.gz step_0.27.2 && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 USER $APP_UID
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 8443
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -20,4 +31,15 @@ RUN dotnet publish "./GalacticaBot.Api.csproj" -c $BUILD_CONFIGURATION -o /app/p
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "GalacticaBot.Api.dll"]
+
+# Create certificates directory
+USER root
+RUN mkdir -p /app/certs && chown $APP_UID:$APP_UID /app/certs
+USER $APP_UID
+
+# Copy entrypoint script
+COPY --chown=$APP_UID:$APP_UID step-ca/scripts/provision-api-cert.sh /app/scripts/provision-api-cert.sh
+RUN chmod +x /app/scripts/provision-api-cert.sh
+
+# Provision certificates and start the application
+ENTRYPOINT ["/bin/bash", "-c", "/app/scripts/provision-api-cert.sh && dotnet GalacticaBot.Api.dll"]

@@ -6,6 +6,16 @@
 # dotenv files
 .env
 
+# Certificate and secret files
+*.crt
+*.key
+*.pem
+*.p12
+*.pfx
+step-ca/certs/
+step-ca/secrets/
+*.csr
+
 # User-specific files
 *.rsuser
 *.suo

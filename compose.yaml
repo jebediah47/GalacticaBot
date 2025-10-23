@@ -1,4 +1,28 @@
 ﻿services:
+  step-ca:
+    image: smallstep/step-ca:latest
+    container_name: step-ca
+    volumes:
+      - step-ca-data:/home/step
+      - ./step-ca/scripts/init-ca.sh:/usr/local/bin/init-ca.sh:ro
+    environment:
+      - CA_NAME=GalacticaBot CA
+      - CA_DNS=step-ca
+      - CA_ADDRESS=:9000
+      - CA_PROVISIONER=admin
+      - CA_PASSWORD=${CA_PASSWORD:-changeme}
+    ports:
+      - "9000:9000"
+    networks:
+      - galactica-bot-network
+    entrypoint: ["/usr/local/bin/init-ca.sh"]
+    healthcheck:
+      test: ["CMD", "step", "ca", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
   galactica-bot:
     image: galactica-bot
     build:
@@ -8,12 +32,23 @@
       - DOTNET_ENVIRONMENT=Production
       - DATABASE_URL=${DATABASE_URL}
       - GALACTICA_TOKEN=${GALACTICA_TOKEN}
-      - BOT_API_URL=http://galactica-bot.api:8080
+      - BOT_API_URL=https://galactica-bot.api:8443
+      - CA_URL=https://step-ca:9000
+      - CA_PROVISIONER=admin
+      - CA_PASSWORD=${CA_PASSWORD:-changeme}
+      - SERVICE_NAME=galactica-bot
+      - CERT_PATH=/app/certs
+    volumes:
+      - bot-certs:/app/certs
+      - ./step-ca/scripts:/app/scripts:ro
     restart: unless-stopped
     networks:
       - galactica-bot-network
     depends_on:
-      - galactica-bot.api
+      step-ca:
+        condition: service_healthy
+      galactica-bot.api:
+        condition: service_started
 
   galactica-bot.api:
     image: galactica-bot.api
@@ -23,12 +58,31 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - DATABASE_URL=${DATABASE_URL}
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_URLS=https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certs/galactica-bot.api.crt
+      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/app/certs/galactica-bot.api.key
+      - CA_URL=https://step-ca:9000
+      - CA_PROVISIONER=admin
+      - CA_PASSWORD=${CA_PASSWORD:-changeme}
+      - SERVICE_NAME=galactica-bot.api
+      - CERT_PATH=/app/certs
+      - MTLS_ENABLED=true
+    volumes:
+      - api-certs:/app/certs
+      - ./step-ca/scripts:/app/scripts:ro
     ports:
-      - "8080:8080"
+      - "8443:8443"
     networks:
       - galactica-bot-network
+    depends_on:
+      step-ca:
+        condition: service_healthy
 
 networks:
   galactica-bot-network:
     driver: bridge
+
+volumes:
+  step-ca-data:
+  bot-certs:
+  api-certs:

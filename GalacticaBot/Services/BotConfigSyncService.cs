@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NetCord.Gateway;
+using System.Security.Cryptography.X509Certificates;
 
 namespace GalacticaBot.Services;
 
@@ -38,7 +39,84 @@ public sealed class BotConfigSyncService : BackgroundService
 
         var hubUrl = CombineUrl(baseUrl, "/hubs/botconfig");
 
-        _connection = new HubConnectionBuilder().WithUrl(hubUrl).WithAutomaticReconnect().Build();
+        // Configure HttpClient with client certificate for mTLS
+        var certPath = Environment.GetEnvironmentVariable("CERT_PATH") ?? "/app/certs";
+        var serviceName = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "galactica-bot";
+        var clientCertPath = Path.Combine(certPath, $"{serviceName}.crt");
+        var clientKeyPath = Path.Combine(certPath, $"{serviceName}.key");
+        var rootCaPath = Path.Combine(certPath, "root_ca.crt");
+
+        var httpClientHandler = new HttpClientHandler();
+
+        // Configure client certificate if available
+        if (File.Exists(clientCertPath) && File.Exists(clientKeyPath))
+        {
+            _logger.LogInformation("Configuring mTLS with client certificate: {CertPath}", clientCertPath);
+
+            try
+            {
+                var clientCert = X509Certificate2.CreateFromPemFile(clientCertPath, clientKeyPath);
+                httpClientHandler.ClientCertificates.Add(clientCert);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to load client certificate from {CertPath}", clientCertPath);
+                throw;
+            }
+        }
+
+        // Configure root CA trust if available
+        if (File.Exists(rootCaPath))
+        {
+            _logger.LogInformation("Configuring root CA trust: {RootCaPath}", rootCaPath);
+
+            httpClientHandler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+            {
+                if (cert == null)
+                {
+                    _logger.LogWarning("Server certificate is null");
+                    return false;
+                }
+
+                if (chain == null)
+                {
+                    _logger.LogWarning("Certificate chain is null");
+                    return false;
+                }
+
+                try
+                {
+                    using var rootCert = X509Certificate2.CreateFromPemFile(rootCaPath);
+                    chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                    chain.ChainPolicy.CustomTrustStore.Add(rootCert);
+                    chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+
+                    var result = chain.Build(cert);
+                    if (!result)
+                    {
+                        _logger.LogWarning(
+                            "Certificate chain validation failed for {Subject}. Errors: {Errors}",
+                            cert.Subject,
+                            string.Join(", ", chain.ChainStatus.Select(s => s.StatusInformation)));
+                    }
+
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error validating server certificate");
+                    return false;
+                }
+            };
+        }
+
+        _connection = new HubConnectionBuilder()
+            .WithUrl(hubUrl, options =>
+            {
+                options.HttpMessageHandlerFactory = _ => httpClientHandler;
+            })
+            .WithAutomaticReconnect()
+            .Build();
 
         _connection.On(
             "OnConfigurationUpdated",

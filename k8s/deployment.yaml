@@ -1,0 +1,298 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: galacticabot
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: galacticabot-secrets
+  namespace: galacticabot
+type: Opaque
+stringData:
+  database-url: "postgresql://user:password@postgres:5432/galacticabot"
+  discord-token: "your_discord_bot_token_here"
+  ca-password: "changeme-use-strong-password"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: step-ca-config
+  namespace: galacticabot
+data:
+  init-ca.sh: |
+    #!/bin/bash
+    set -e
+    CA_NAME="${CA_NAME:-GalacticaBot CA}"
+    CA_DNS="${CA_DNS:-step-ca}"
+    CA_ADDRESS="${CA_ADDRESS:-:9000}"
+    CA_PROVISIONER="${CA_PROVISIONER:-admin}"
+    CA_PASSWORD="${CA_PASSWORD:-changeme}"
+    
+    if [ -f "/home/step/config/ca.json" ]; then
+        echo "Certificate Authority already initialized"
+        exec step-ca /home/step/config/ca.json --password-file /home/step/secrets/password
+    fi
+    
+    echo "Initializing Certificate Authority..."
+    echo "$CA_PASSWORD" > /home/step/secrets/password
+    
+    step ca init \
+        --name="$CA_NAME" \
+        --dns="$CA_DNS" \
+        --address="$CA_ADDRESS" \
+        --provisioner="$CA_PROVISIONER" \
+        --password-file=/home/step/secrets/password \
+        --provisioner-password-file=/home/step/secrets/password \
+        --deployment-type=standalone
+    
+    echo "Certificate Authority initialized successfully"
+    exec step-ca /home/step/config/ca.json --password-file /home/step/secrets/password
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: step-ca-data
+  namespace: galacticabot
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: step-ca
+  namespace: galacticabot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: step-ca
+  template:
+    metadata:
+      labels:
+        app: step-ca
+    spec:
+      containers:
+      - name: step-ca
+        image: smallstep/step-ca:latest
+        ports:
+        - containerPort: 9000
+          name: ca
+        env:
+        - name: CA_NAME
+          value: "GalacticaBot CA"
+        - name: CA_DNS
+          value: "step-ca.galacticabot.svc.cluster.local"
+        - name: CA_ADDRESS
+          value: ":9000"
+        - name: CA_PROVISIONER
+          value: "admin"
+        - name: CA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: galacticabot-secrets
+              key: ca-password
+        volumeMounts:
+        - name: step-ca-data
+          mountPath: /home/step
+        - name: init-script
+          mountPath: /usr/local/bin/init-ca.sh
+          subPath: init-ca.sh
+        command: ["/usr/local/bin/init-ca.sh"]
+        livenessProbe:
+          exec:
+            command:
+            - step
+            - ca
+            - health
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - step
+            - ca
+            - health
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: step-ca-data
+        persistentVolumeClaim:
+          claimName: step-ca-data
+      - name: init-script
+        configMap:
+          name: step-ca-config
+          defaultMode: 0755
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: step-ca
+  namespace: galacticabot
+spec:
+  selector:
+    app: step-ca
+  ports:
+  - port: 9000
+    targetPort: 9000
+    name: ca
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: galactica-bot-api
+  namespace: galacticabot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: galactica-bot-api
+  template:
+    metadata:
+      labels:
+        app: galactica-bot-api
+    spec:
+      initContainers:
+      - name: wait-for-ca
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z step-ca 9000; do echo waiting for ca; sleep 2; done']
+      containers:
+      - name: api
+        image: galactica-bot.api:latest
+        ports:
+        - containerPort: 8443
+          name: https
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: galacticabot-secrets
+              key: database-url
+        - name: ASPNETCORE_URLS
+          value: "https://+:8443"
+        - name: ASPNETCORE_Kestrel__Certificates__Default__Path
+          value: "/app/certs/galactica-bot.api.crt"
+        - name: ASPNETCORE_Kestrel__Certificates__Default__KeyPath
+          value: "/app/certs/galactica-bot.api.key"
+        - name: CA_URL
+          value: "https://step-ca.galacticabot.svc.cluster.local:9000"
+        - name: CA_PROVISIONER
+          value: "admin"
+        - name: CA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: galacticabot-secrets
+              key: ca-password
+        - name: SERVICE_NAME
+          value: "galactica-bot.api"
+        - name: CERT_PATH
+          value: "/app/certs"
+        - name: MTLS_ENABLED
+          value: "true"
+        volumeMounts:
+        - name: certs
+          mountPath: /app/certs
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8443
+            scheme: HTTPS
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8443
+            scheme: HTTPS
+          initialDelaySeconds: 30
+          periodSeconds: 10
+      volumes:
+      - name: certs
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: galactica-bot-api
+  namespace: galacticabot
+spec:
+  selector:
+    app: galactica-bot-api
+  ports:
+  - port: 8443
+    targetPort: 8443
+    name: https
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: galactica-bot
+  namespace: galacticabot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: galactica-bot
+  template:
+    metadata:
+      labels:
+        app: galactica-bot
+    spec:
+      initContainers:
+      - name: wait-for-api
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z galactica-bot-api 8443; do echo waiting for api; sleep 2; done']
+      containers:
+      - name: bot
+        image: galactica-bot:latest
+        env:
+        - name: DOTNET_ENVIRONMENT
+          value: "Production"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: galacticabot-secrets
+              key: database-url
+        - name: GALACTICA_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: galacticabot-secrets
+              key: discord-token
+        - name: BOT_API_URL
+          value: "https://galactica-bot-api.galacticabot.svc.cluster.local:8443"
+        - name: CA_URL
+          value: "https://step-ca.galacticabot.svc.cluster.local:9000"
+        - name: CA_PROVISIONER
+          value: "admin"
+        - name: CA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: galacticabot-secrets
+              key: ca-password
+        - name: SERVICE_NAME
+          value: "galactica-bot"
+        - name: CERT_PATH
+          value: "/app/certs"
+        volumeMounts:
+        - name: certs
+          mountPath: /app/certs
+      volumes:
+      - name: certs
+        emptyDir: {}

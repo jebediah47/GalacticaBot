@@ -4,14 +4,93 @@ using GalacticaBot.Api.Services;
 using GalacticaBot.Data;
 using GalacticaBot.EnvManager;
 using GalacticaBot.Utils;
+using Microsoft.AspNetCore.Authentication.Certificate;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.AddConsole();
 
 EnvManager.EnsureEnvironment(builder.Environment);
+
+// Configure Kestrel for mTLS if enabled
+var mtlsEnabled = Environment.GetEnvironmentVariable("MTLS_ENABLED")?.ToLower() == "true";
+if (mtlsEnabled)
+{
+    var certPath = Environment.GetEnvironmentVariable("CERT_PATH") ?? "/app/certs";
+    var serviceName = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "galactica-bot.api";
+    var rootCaPath = Path.Combine(certPath, "root_ca.crt");
+
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ConfigureHttpsDefaults(httpsOptions =>
+        {
+            // Require client certificates for mTLS
+            httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+            httpsOptions.CheckCertificateRevocation = false;
+
+            // Configure client certificate validation
+            httpsOptions.ClientCertificateValidation = (certificate, chain, errors) =>
+            {
+                if (chain == null)
+                {
+                    return false;
+                }
+
+                // Load the root CA certificate
+                if (File.Exists(rootCaPath))
+                {
+                    using var rootCert = X509Certificate2.CreateFromPemFile(rootCaPath);
+                    chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                    chain.ChainPolicy.CustomTrustStore.Add(rootCert);
+                    chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+
+                    return chain.Build(certificate);
+                }
+
+                return false;
+            };
+        });
+    });
+
+    // Add certificate authentication
+    builder.Services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
+        .AddCertificate(options =>
+        {
+            options.AllowedCertificateTypes = CertificateTypes.All;
+            options.RevocationMode = X509RevocationMode.NoCheck;
+
+            options.Events = new CertificateAuthenticationEvents
+            {
+                OnCertificateValidated = context =>
+                {
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILogger<Program>>();
+                    logger.LogInformation(
+                        "Client certificate validated: Subject={Subject}, Issuer={Issuer}",
+                        context.ClientCertificate.Subject,
+                        context.ClientCertificate.Issuer);
+
+                    return Task.CompletedTask;
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    var logger = context.HttpContext.RequestServices
+                        .GetRequiredService<ILogger<Program>>();
+                    logger.LogError(
+                        context.Exception,
+                        "Client certificate authentication failed");
+
+                    return Task.CompletedTask;
+                }
+            };
+        });
+
+    builder.Services.AddAuthorization();
+}
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -43,6 +122,13 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
+}
+
+// Use authentication and authorization if mTLS is enabled
+if (mtlsEnabled)
+{
+    app.UseAuthentication();
+    app.UseAuthorization();
 }
 
 app.UseHttpsRedirection();
