@@ -80,8 +80,6 @@
       - ASPNETCORE_ENVIRONMENT=Production
       - DATABASE_URL=${DATABASE_URL}
       - ASPNETCORE_URLS=https://+:8443
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/app/certs/galactica-bot.api.crt
-      - ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/app/certs/galactica-bot.api.key
       - CA_URL=https://step-ca:9000
       - CA_PROVISIONER=admin
       - CA_PASSWORD=${CA_PASSWORD:-changeme}

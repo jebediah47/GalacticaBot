@@ -22,12 +22,20 @@ if (mtlsEnabled)
 {
     var certPath = Environment.GetEnvironmentVariable("CERT_PATH") ?? "/app/certs";
     var serviceName = Environment.GetEnvironmentVariable("SERVICE_NAME") ?? "galactica-bot.api";
+    var serverCertPath = Path.Combine(certPath, $"{serviceName}.crt");
+    var serverKeyPath = Path.Combine(certPath, $"{serviceName}.key");
     var rootCaPath = Path.Combine(certPath, "root_ca.crt");
 
     builder.WebHost.ConfigureKestrel(options =>
     {
         options.ConfigureHttpsDefaults(httpsOptions =>
         {
+            // Load server certificate
+            if (File.Exists(serverCertPath) && File.Exists(serverKeyPath))
+            {
+                httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(serverCertPath, serverKeyPath);
+            }
+
             // Allow client certificates (optional, not required at Kestrel level)
             // Authentication will be enforced at the hub level
             httpsOptions.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
