@@ -59,7 +59,7 @@ app.MapGuildConfigsEndpoints();
 var dbFactory = app.Services.GetRequiredService<IDbContextFactory<GalacticaDbContext>>();
 await using (var db = await dbFactory.CreateDbContextAsync())
 {
-    await db.Database.EnsureCreatedAsync();
+    await db.Database.MigrateAsync();
 }
 
 app.Run();

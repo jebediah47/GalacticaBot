@@ -58,7 +58,7 @@ var host = builder.Build();
 var dbFactory = host.Services.GetRequiredService<IDbContextFactory<GalacticaDbContext>>();
 await using (var db = await dbFactory.CreateDbContextAsync())
 {
-    await db.Database.EnsureCreatedAsync();
+    await db.Database.MigrateAsync();
 }
 
 host.AddModules(typeof(Program).Assembly);
