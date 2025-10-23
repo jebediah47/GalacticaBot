@@ -11,6 +11,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalacticaBot.Api", "Galacti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalacticaBot.EnvManager", "GalacticaBot.EnvManager\GalacticaBot.EnvManager.csproj", "{3508CBC8-1DCB-4894-B40E-0A76E37328DD}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{57AB1B60-59D0-417A-98E4-74C38E542C8E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{ED852028-909E-4E86-B446-2235AD09A9CA}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\docker-publish-bot.yml = .github\workflows\docker-publish-bot.yml
+		.github\workflows\docker-publish-api.yml = .github\workflows\docker-publish-api.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,5 +37,8 @@ Global
 		{3508CBC8-1DCB-4894-B40E-0A76E37328DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3508CBC8-1DCB-4894-B40E-0A76E37328DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3508CBC8-1DCB-4894-B40E-0A76E37328DD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{ED852028-909E-4E86-B446-2235AD09A9CA} = {57AB1B60-59D0-417A-98E4-74C38E542C8E}
 	EndGlobalSection
 EndGlobal

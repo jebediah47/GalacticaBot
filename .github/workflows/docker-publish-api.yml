@@ -1,4 +1,4 @@
-name: Build and Push to GHCR
+﻿name: Build and Push Galactica Bot API to GHCR
 
 on:
   workflow_dispatch:
@@ -29,7 +29,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -42,7 +42,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./GalacticaBot/Dockerfile
+          file: ./GalacticaBot.Api/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
