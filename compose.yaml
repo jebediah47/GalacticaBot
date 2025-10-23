@@ -9,6 +9,7 @@
       - DATABASE_URL=${DATABASE_URL}
       - GALACTICA_TOKEN=${GALACTICA_TOKEN}
       - BOT_API_URL=http://galactica-bot.api:8080
+      - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped
     networks:
       - galactica-bot-network
@@ -24,6 +25,8 @@
       - ASPNETCORE_ENVIRONMENT=Production
       - DATABASE_URL=${DATABASE_URL}
       - ASPNETCORE_URLS=http://+:8080
+      - JWT_SECRET=${JWT_SECRET}
+    restart: unless-stopped
     ports:
       - "8080:8080"
     networks:
