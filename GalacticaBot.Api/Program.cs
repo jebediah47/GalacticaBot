@@ -26,94 +26,104 @@ if (mtlsEnabled)
     var serverKeyPath = Path.Combine(certPath, $"{serviceName}.key");
     var rootCaPath = Path.Combine(certPath, "root_ca.crt");
 
-    // Check if certificates exist
-    if (!File.Exists(serverCertPath) || !File.Exists(serverKeyPath))
+    // Wait for certificates to be provisioned (with timeout)
+    var maxWaitSeconds = 120; // Wait up to 2 minutes
+    var waitedSeconds = 0;
+    while ((!File.Exists(serverCertPath) || !File.Exists(serverKeyPath)) && waitedSeconds < maxWaitSeconds)
     {
-        throw new InvalidOperationException(
-            $"Server certificates not found. Expected files:\n" +
-            $"  - {serverCertPath}\n" +
-            $"  - {serverKeyPath}\n" +
-            "Ensure the entrypoint script has provisioned certificates before starting the application.");
+        Console.WriteLine($"Waiting for certificates... ({waitedSeconds}/{maxWaitSeconds}s)");
+        await Task.Delay(1000);
+        waitedSeconds++;
     }
 
-    builder.WebHost.ConfigureKestrel(options =>
+    // Check if certificates were provisioned
+    if (!File.Exists(serverCertPath) || !File.Exists(serverKeyPath))
     {
-        options.ConfigureHttpsDefaults(httpsOptions =>
+        Console.WriteLine($"Warning: Server certificates not found after {maxWaitSeconds} seconds. Starting without mTLS.");
+        Console.WriteLine($"Expected files:\n  - {serverCertPath}\n  - {serverKeyPath}");
+        mtlsEnabled = false;
+    }
+    else
+    {
+        builder.WebHost.ConfigureKestrel(options =>
         {
-            // Load server certificate
-            httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(serverCertPath, serverKeyPath);
-
-            // Allow client certificates (optional, not required at Kestrel level)
-            // Authentication will be enforced at the hub level
-            httpsOptions.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
-            httpsOptions.CheckCertificateRevocation = false;
-
-            // Configure client certificate validation
-            httpsOptions.ClientCertificateValidation = (certificate, chain, errors) =>
+            options.ConfigureHttpsDefaults(httpsOptions =>
             {
-                if (chain == null)
+                // Load server certificate
+                httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(serverCertPath, serverKeyPath);
+
+                // Allow client certificates (optional, not required at Kestrel level)
+                // Authentication will be enforced at the hub level
+                httpsOptions.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
+                httpsOptions.CheckCertificateRevocation = false;
+
+                // Configure client certificate validation
+                httpsOptions.ClientCertificateValidation = (certificate, chain, errors) =>
                 {
+                    if (chain == null)
+                    {
+                        return false;
+                    }
+
+                    // Load the root CA certificate
+                    if (File.Exists(rootCaPath))
+                    {
+                        using var rootCert = X509Certificate2.CreateFromPemFile(rootCaPath);
+                        chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+                        chain.ChainPolicy.CustomTrustStore.Add(rootCert);
+                        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+
+                        return chain.Build(certificate);
+                    }
+
                     return false;
-                }
-
-                // Load the root CA certificate
-                if (File.Exists(rootCaPath))
-                {
-                    using var rootCert = X509Certificate2.CreateFromPemFile(rootCaPath);
-                    chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
-                    chain.ChainPolicy.CustomTrustStore.Add(rootCert);
-                    chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-
-                    return chain.Build(certificate);
-                }
-
-                return false;
-            };
+                };
+            });
         });
-    });
 
-    // Add certificate authentication
-    builder.Services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
-        .AddCertificate(options =>
-        {
-            options.AllowedCertificateTypes = CertificateTypes.All;
-            options.RevocationMode = X509RevocationMode.NoCheck;
-
-            options.Events = new CertificateAuthenticationEvents
+        // Add certificate authentication
+        builder.Services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationScheme)
+            .AddCertificate(options =>
             {
-                OnCertificateValidated = context =>
+                options.AllowedCertificateTypes = CertificateTypes.All;
+                options.RevocationMode = X509RevocationMode.NoCheck;
+
+                options.Events = new CertificateAuthenticationEvents
                 {
-                    var logger = context.HttpContext.RequestServices
-                        .GetRequiredService<ILogger<Program>>();
-                    logger.LogInformation(
-                        "Client certificate validated: Subject={Subject}, Issuer={Issuer}",
-                        context.ClientCertificate.Subject,
-                        context.ClientCertificate.Issuer);
+                    OnCertificateValidated = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices
+                            .GetRequiredService<ILogger<Program>>();
+                        logger.LogInformation(
+                            "Client certificate validated: Subject={Subject}, Issuer={Issuer}",
+                            context.ClientCertificate.Subject,
+                            context.ClientCertificate.Issuer);
 
-                    return Task.CompletedTask;
-                },
-                OnAuthenticationFailed = context =>
-                {
-                    var logger = context.HttpContext.RequestServices
-                        .GetRequiredService<ILogger<Program>>();
-                    logger.LogError(
-                        context.Exception,
-                        "Client certificate authentication failed");
+                        return Task.CompletedTask;
+                    },
+                    OnAuthenticationFailed = context =>
+                    {
+                        var logger = context.HttpContext.RequestServices
+                            .GetRequiredService<ILogger<Program>>();
+                        logger.LogError(
+                            context.Exception,
+                            "Client certificate authentication failed");
 
-                    return Task.CompletedTask;
-                }
-            };
-        });
+                        return Task.CompletedTask;
+                    }
+                };
+            });
 
-    builder.Services.AddAuthorization(options =>
-    {
-        // Policy that requires certificate authentication
-        options.AddPolicy("RequireCertificate", policy =>
+        builder.Services.AddAuthorization(options =>
         {
-            policy.RequireAuthenticatedUser();
-            policy.AuthenticationSchemes.Add(CertificateAuthenticationDefaults.AuthenticationScheme);
+            // Policy that requires certificate authentication
+            options.AddPolicy("RequireCertificate", policy =>
+            {
+                policy.RequireAuthenticatedUser();
+                policy.AuthenticationSchemes.Add(CertificateAuthenticationDefaults.AuthenticationScheme);
+            });
         });
-    });
+    }
 }
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
