@@ -1,5 +1,5 @@
-﻿using GalacticaBot.Api.Models;
-using GalacticaBot.Api.Hubs;
+﻿using GalacticaBot.Api.Hubs;
+using GalacticaBot.Api.Models;
 using GalacticaBot.Data;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
