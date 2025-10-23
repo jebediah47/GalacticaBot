@@ -28,8 +28,9 @@ if (mtlsEnabled)
     {
         options.ConfigureHttpsDefaults(httpsOptions =>
         {
-            // Require client certificates for mTLS
-            httpsOptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+            // Allow client certificates (optional, not required at Kestrel level)
+            // Authentication will be enforced at the hub level
+            httpsOptions.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
             httpsOptions.CheckCertificateRevocation = false;
 
             // Configure client certificate validation
@@ -89,7 +90,15 @@ if (mtlsEnabled)
             };
         });
 
-    builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization(options =>
+    {
+        // Policy that requires certificate authentication
+        options.AddPolicy("RequireCertificate", policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.AuthenticationSchemes.Add(CertificateAuthenticationDefaults.AuthenticationScheme);
+        });
+    });
 }
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -133,9 +142,17 @@ if (mtlsEnabled)
 
 app.UseHttpsRedirection();
 
-// Map SignalR hub
-app.MapHub<BotConfigHub>("/hubs/botconfig");
-app.MapHub<GuildConfigHub>("/hubs/guildconfig");
+// Map SignalR hubs with mTLS requirement if enabled
+if (mtlsEnabled)
+{
+    app.MapHub<BotConfigHub>("/hubs/botconfig").RequireAuthorization("RequireCertificate");
+    app.MapHub<GuildConfigHub>("/hubs/guildconfig").RequireAuthorization("RequireCertificate");
+}
+else
+{
+    app.MapHub<BotConfigHub>("/hubs/botconfig");
+    app.MapHub<GuildConfigHub>("/hubs/guildconfig");
+}
 
 // Map health check endpoint
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
