@@ -26,15 +26,22 @@ if (mtlsEnabled)
     var serverKeyPath = Path.Combine(certPath, $"{serviceName}.key");
     var rootCaPath = Path.Combine(certPath, "root_ca.crt");
 
+    // Check if certificates exist
+    if (!File.Exists(serverCertPath) || !File.Exists(serverKeyPath))
+    {
+        throw new InvalidOperationException(
+            $"Server certificates not found. Expected files:\n" +
+            $"  - {serverCertPath}\n" +
+            $"  - {serverKeyPath}\n" +
+            "Ensure the entrypoint script has provisioned certificates before starting the application.");
+    }
+
     builder.WebHost.ConfigureKestrel(options =>
     {
         options.ConfigureHttpsDefaults(httpsOptions =>
         {
             // Load server certificate
-            if (File.Exists(serverCertPath) && File.Exists(serverKeyPath))
-            {
-                httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(serverCertPath, serverKeyPath);
-            }
+            httpsOptions.ServerCertificate = X509Certificate2.CreateFromPemFile(serverCertPath, serverKeyPath);
 
             // Allow client certificates (optional, not required at Kestrel level)
             // Authentication will be enforced at the hub level
