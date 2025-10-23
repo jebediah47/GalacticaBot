@@ -18,6 +18,9 @@ fi
 
 echo "Initializing Certificate Authority..."
 
+# Ensure secrets directory exists
+mkdir -p /home/step/secrets
+
 # Initialize the CA
 echo "$CA_PASSWORD" > /home/step/secrets/password
 

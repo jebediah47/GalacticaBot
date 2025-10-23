@@ -9,15 +9,37 @@ CA_FINGERPRINT="${CA_FINGERPRINT}"
 SERVICE_NAME="${SERVICE_NAME:-galactica-bot}"
 CERT_PATH="${CERT_PATH:-/app/certs}"
 CA_PASSWORD="${CA_PASSWORD:-changeme}"
+CA_PROVISIONER="${CA_PROVISIONER:-admin}"
 
-# Wait for CA to be ready
+# Create certificate directory if it doesn't exist
+mkdir -p "$CERT_PATH"
+
+# Wait for CA to be ready (use --insecure for initial health check)
 echo "Waiting for Certificate Authority at $CA_URL..."
-until step ca health --ca-url "$CA_URL" --root /app/certs/root_ca.crt 2>/dev/null; do
-    echo "CA not ready yet, retrying in 2 seconds..."
+MAX_RETRIES=30
+RETRY_COUNT=0
+until step ca health --ca-url "$CA_URL" --insecure 2>/dev/null; do
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+    if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+        echo "Certificate Authority did not become ready after $MAX_RETRIES attempts"
+        exit 1
+    fi
+    echo "CA not ready yet, retrying in 2 seconds... (attempt $RETRY_COUNT/$MAX_RETRIES)"
     sleep 2
 done
 
 echo "Certificate Authority is ready"
+
+# Download root certificate if it doesn't exist
+if [ ! -f "$CERT_PATH/root_ca.crt" ]; then
+    echo "Downloading root certificate..."
+    if [ -n "$CA_FINGERPRINT" ]; then
+        step ca root "$CERT_PATH/root_ca.crt" --ca-url "$CA_URL" --fingerprint "$CA_FINGERPRINT" || \
+        step ca root "$CERT_PATH/root_ca.crt" --ca-url "$CA_URL" --insecure
+    else
+        step ca root "$CERT_PATH/root_ca.crt" --ca-url "$CA_URL" --insecure
+    fi
+fi
 
 # Check if certificate already exists and is valid
 if [ -f "$CERT_PATH/$SERVICE_NAME.crt" ] && [ -f "$CERT_PATH/$SERVICE_NAME.key" ]; then
