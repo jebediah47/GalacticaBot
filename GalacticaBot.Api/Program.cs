@@ -137,6 +137,11 @@ app.UseHttpsRedirection();
 app.MapHub<BotConfigHub>("/hubs/botconfig");
 app.MapHub<GuildConfigHub>("/hubs/guildconfig");
 
+// Map health check endpoint
+app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }))
+    .WithName("HealthCheck")
+    .WithOpenApi();
+
 // Map API endpoints
 app.MapBotConfigEndpoints();
 app.MapGuildConfigsEndpoints();
