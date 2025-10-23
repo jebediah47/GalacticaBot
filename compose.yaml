@@ -1,4 +1,23 @@
 ﻿services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=galacticabot
+      - POSTGRES_PASSWORD=galacticabot
+      - POSTGRES_DB=galacticabot
+    ports:
+      - "5432:5432"
+    networks:
+      - galactica-bot-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U galacticabot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   step-ca:
     image: smallstep/step-ca:latest
     container_name: step-ca
@@ -45,6 +64,8 @@
     networks:
       - galactica-bot-network
     depends_on:
+      postgres:
+        condition: service_healthy
       step-ca:
         condition: service_healthy
       galactica-bot.api:
@@ -75,6 +96,8 @@
     networks:
       - galactica-bot-network
     depends_on:
+      postgres:
+        condition: service_healthy
       step-ca:
         condition: service_healthy
 
@@ -83,6 +106,7 @@ networks:
     driver: bridge
 
 volumes:
+  postgres-data:
   step-ca-data:
   bot-certs:
   api-certs:
