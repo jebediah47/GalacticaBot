@@ -2,11 +2,8 @@
 
 # Install step CLI for certificate management
 USER root
-RUN apk add --no-cache bash jq curl wget ca-certificates && \
-    wget -O /etc/apk/keys/smallstep.rsa.pub https://raw.githubusercontent.com/smallstep/cli/master/packaging/alpine/smallstep.rsa.pub && \
-    echo "https://raw.githubusercontent.com/smallstep/cli/master/packaging/alpine/" >> /etc/apk/repositories && \
-    apk update && \
-    apk add --no-cache step-cli
+RUN apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community \
+    bash jq curl ca-certificates step-cli
 
 USER $APP_UID
 WORKDIR /app
